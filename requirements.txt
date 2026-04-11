@@ -1,0 +1,6 @@
+Flask
+Flask-SQLAlchemy
+PyMySQL==1.1.0
+Werkzeug
+python-dotenv
+Flask-Login

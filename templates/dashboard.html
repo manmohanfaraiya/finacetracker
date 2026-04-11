@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-light: #ffffff;
+            --accent: #00e5ff;
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background-attachment: fixed;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-weight: 400;
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+
+        .balance { border-top: 4px solid var(--accent); }
+        .income { border-top: 4px solid var(--success); }
+        .expense { border-top: 4px solid var(--danger); }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.2);
+        }
+
+        select option {
+            background: #2a5298;
+            color: white;
+        }
+
+        button.btn-primary {
+            padding: 12px 20px;
+            background: var(--accent);
+            color: #12213a;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button.btn-primary:hover {
+            background: #00c3d9;
+            transform: scale(1.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        tbody tr {
+            transition: background 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background: #ff2a3f;
+            transform: scale(1.1);
+        }
+
+        .chart-container-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div>💰 Vault</div>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="container">
+
+    <!-- Summary Cards -->
+    <div class="cards">
+        <div class="card balance">
+            <h3>Total Balance</h3>
+            <p id="balance">₹0</p>
+        </div>
+
+        <div class="card income">
+            <h3>Total Income</h3>
+            <p id="income">₹0</p>
+        </div>
+
+        <div class="card expense">
+            <h3>Total Expense</h3>
+            <p id="expense">₹0</p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Interactive Panel (Form + Chart) -->
+        <div>
+            <div class="glass-panel">
+                <h3 style="margin-top: 0;">Add Transaction</h3>
+                <form action="/add" method="POST" class="form-group">
+                    <input type="number" name="amount" placeholder="Amount (e.g. 500)" required step="0.01">
+                    
+                    <select name="type" required>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+
+                    <input type="text" name="category" placeholder="Category (e.g. Groceries)" required>
+                    <input type="date" name="date" required>
+
+                    <button type="submit" class="btn-primary">Add to Ledger</button>
+                </form>
+            </div>
+
+            <div class="glass-panel">
+                <h3 style="margin-top: 0;">Expense Breakdown</h3>
+                <div class="chart-container-wrapper">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+            <!-- Line Chart Panel -->
+            <div class="glass-panel">
+                <h3 style="margin-top: 0;">Expense Trend Analysis (Line Graph)</h3>
+                <div class="chart-container-wrapper" style="height: 250px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Transaction Table -->
+            <div class="glass-panel" style="overflow-x: auto; flex: 1; margin-bottom: 0;">
+                <h3 style="margin-top: 0;">Recent Transactions</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let transactions = [];
+let chart;
+let trendChartInstance;
+
+// Fetch Transactions on load
+window.addEventListener('DOMContentLoaded', () => {
+    fetchData();
+});
+
+function fetchData() {
+    fetch('/get-data')
+        .then(response => response.json())
+        .then(data => {
+            transactions = data;
+            updateUI();
+        })
+        .catch(err => console.error("Failed to load transactions", err));
+}
+
+function updateUI() {
+    let income = 0, expense = 0;
+    let table = document.getElementById("tableBody");
+    table.innerHTML = "";
+
+    if(transactions.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.5);">No transactions yet. Add one!</td></tr>`;
+    }
+
+    // Sort transactions by date descending mostly handled naturally if we want, but let's just append
+    transactions.forEach(t => {
+        let amountNum = Number(t.amount);
+        if (t.type === "income") income += amountNum;
+        else expense += amountNum;
+
+        // Visual badges
+        let typeBadge = t.type === 'income' 
+            ? `<span style="color: var(--success); font-weight: bold;">+ Income</span>`
+            : `<span style="color: var(--danger); font-weight: bold;">- Expense</span>`;
+
+        table.innerHTML += `
+            <tr>
+                <td>${t.date}</td>
+                <td>${t.category}</td>
+                <td>${typeBadge}</td>
+                <td>₹${t.amount}</td>
+                <td>
+                    <button class="btn-danger" onclick="deleteTransaction(${t.id})" title="Delete">🗑</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("income").innerText = "₹" + income.toFixed(2);
+    document.getElementById("expense").innerText = "₹" + expense.toFixed(2);
+    document.getElementById("balance").innerText = "₹" + (income - expense).toFixed(2);
+
+    updateChart();
+}
+
+function deleteTransaction(id) {
+    if(!confirm("Are you sure you want to delete this transaction?")) return;
+
+    fetch(`/delete/${id}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            fetchData(); // Reload data smoothly
+        } else {
+            alert("Error: " + data.error);
+        }
+    });
+}
+
+function updateChart() {
+    // 1. Doughnut Chart: Income vs Expense (Remaining vs Spent)
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach(t => {
+        let amt = Number(t.amount);
+        if (t.type === "income") totalIncome += amt;
+        else totalExpense += amt;
+    });
+
+    let remaining = Math.max(totalIncome - totalExpense, 0);
+
+    if (chart) chart.destroy();
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+
+    chart = new Chart(document.getElementById("expenseChart"), {
+        type: "doughnut",
+        data: {
+            labels: ['Remaining Balance', 'Spent (Expenses)'],
+            datasets: [{
+                data: [remaining, totalExpense],
+                backgroundColor: ['#2ed573', '#ff4757'], // Green for remaining, Red for spent
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: 'white' }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 2. Line Chart: Trend Analysis (Expenses over time)
+    let datesObj = {};
+    transactions.forEach(t => {
+        if(t.type === "expense") {
+            datesObj[t.date] = (datesObj[t.date] || 0) + Number(t.amount);
+        }
+    });
+
+    // Sort dates
+    let sortedDates = Object.keys(datesObj).sort();
+    let trendData = sortedDates.map(date => datesObj[date]);
+
+    if (trendChartInstance) trendChartInstance.destroy();
+
+    trendChartInstance = new Chart(document.getElementById("trendChart"), {
+        type: "line",
+        data: {
+            labels: sortedDates,
+            datasets: [{
+                label: 'Expenses tracking by Date',
+                data: trendData,
+                borderColor: '#00e5ff',
+                backgroundColor: 'rgba(0, 229, 255, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4, // Smooth curve
+                pointBackgroundColor: '#fff',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                y: { 
+                    ticks: { color: 'white', beginAtZero: true }, 
+                    grid: { color: 'rgba(255,255,255,0.1)' } 
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { color: 'white' }
+                }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
